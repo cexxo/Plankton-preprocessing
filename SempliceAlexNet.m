@@ -43,6 +43,15 @@ for fold=1:NF%for each fold
         IM=NX{DIV(fold,pattern)};%image
         
         %insert here any pre-processing on the IM image
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %So here i should filter the image and i should find a way to
+        %extract useful features. One of the paper suggests to extract
+        %either local or global features. I'm probably gonna start with
+        %that and then move to some other approach like gabor features or
+        %something i've seen in computer vision for texture recognition.
+        %The second paper suggests to combine cartesian coordinates with
+        %polar coordinates, so that's what i'll try next.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
         if size(IM,3)==1
