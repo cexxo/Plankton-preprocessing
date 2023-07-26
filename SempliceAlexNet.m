@@ -52,7 +52,16 @@ for fold=1:NF%for each fold
         %The second paper suggests to combine cartesian coordinates with
         %polar coordinates, so that's what i'll try next.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %EXTRACTION OF GLOBAL FEATURES
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        smoothingDegree=450;
+        spatialSigma=4;
+        copyIM = IM;
+        IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
+        %montage({copyIM,IM})
+        x = input("Prompt");
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
         if size(IM,3)==1
             IM(:,:,2)=IM;
