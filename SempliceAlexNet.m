@@ -5,10 +5,13 @@ warning off
 datas=44;
 load(strcat('Datas_',int2str(datas)),'DATA');
 %NF=size(DATA{3},1); %number of folds
-NF =1;
+NF =2;
 DIV=DATA{3};%for the division between training and test set
-DIM1=DATA{4};%training patterns number
-DIM2=DATA{5};%total patterns number
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%I added a division by 4 since it was to huge for my computer :(
+DIM1=ceil(DATA{4}/5);%training patterns number
+DIM2=ceil(DATA{5}/5);%total patterns number
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,12 +22,12 @@ net = alexnet;  %load AlexNet
 siz=[227 227];
 
 %parameters
-miniBatchSize = 30;
+miniBatchSize = 15;                         %Originally it was 30
 learningRate = 1e-4;
 metodoOptim='sgdm';
 options = trainingOptions(metodoOptim,...
     'MiniBatchSize',miniBatchSize,...
-    'MaxEpochs',30,...
+    'MaxEpochs',15,...                      %epochs were 30, i'm gonna put it to 15 since i don't have a dedicated GPU
     'InitialLearnRate',learningRate,...
     'Verbose',false,...
     'Plots','training-progress');
@@ -64,7 +67,7 @@ for fold=1:NF%for each fold
         %Having more uniform region should lead to a lower rate of not
         %useful edges. I've decided to try first the sobel operator and
         %then i'll check the canny operator for the edge methodd.
-        smoothingDegree=300;
+        smoothingDegree=300+(fold*50);%I'm gonna set it according to the folder
         spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
         copyIM = IM;
         IM = rgb2gray(IM);
@@ -127,7 +130,7 @@ for fold=1:NF%for each fold
         %Having more uniform region should lead to a lower rate of not
         %useful edges. I've decided to try first the sobel operator and
         %then i'll check the canny operator for the edge methodd.
-        smoothingDegree=300;
+        smoothingDegree=300+(50*fold);
         spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
         copyIM = IM;
         IM = rgb2gray(IM);
