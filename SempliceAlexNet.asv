@@ -10,9 +10,7 @@ DIM1=DATA{4};%training patterns number
 DIM2=DATA{5};%total patterns number
 yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-edgeMethod = 'Canny';
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %load pre-trained AlexNet
 net = alexnet;  %load AlexNet
 siz=[227 227];
@@ -60,20 +58,16 @@ for fold=1:NF%for each fold
         %I've opted for a strong smoothing degree such as 450 to blend
         %better the areas. I opted to do this cause i'd like to try an run
         %the canny edge detector to use that as input for the network.
-        %Having more uniform region should lead to a lower rate of not
-        %useful edges. I've decided to try first the sobel operator and
-        %then i'll check the canny operator for the edge methodd.
-        smoothingDegree=300;
+        %Having more uniform region should lead t
+        smoothingDegree=450;
         spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
         copyIM = IM;
-        IM = rgb2gray(IM);
         try
             IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
-            IM2 = edge(IM,edgeMethod);
         catch ME
             fprintf('Exception\n')
         end
-        %montage({copyIM,IM2})
+        %montage({copyIM,IM})
         %x = input("Prompt");
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
@@ -108,35 +102,7 @@ for fold=1:NF%for each fold
         IM=NX{DIV(fold,pattern)};%image
         
         %insert here any pre-processing on the IM image
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %So here i should filter the image and i should find a way to
-        %extract useful features. One of the paper suggests to extract
-        %either local or global features. I'm probably gonna start with
-        %that and then move to some other approach like gabor features or
-        %something i've seen in computer vision for texture recognition.
-        %The second paper suggests to combine cartesian coordinates with
-        %polar coordinates, so that's what i'll try next.
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %EXTRACTION OF GLOBAL FEATURES
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %I've opted for a strong smoothing degree such as 450 to blend
-        %better the areas. I opted to do this cause i'd like to try an run
-        %the canny edge detector to use that as input for the network.
-        %Having more uniform region should lead to a lower rate of not
-        %useful edges. I've decided to try first the sobel operator and
-        %then i'll check the canny operator for the edge methodd.
-        smoothingDegree=300;
-        spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
-        copyIM = IM;
-        IM = rgb2gray(IM);
-        try
-            IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
-            IM2 = edge(IM,edgeMethod);
-        catch ME
-            fprintf('Exception\n')
-        end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         IM=imresize(IM,[siz(1) siz(2)]);
         if size(IM,3)==1
             IM(:,:,2)=IM;
