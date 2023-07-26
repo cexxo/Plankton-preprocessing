@@ -4,7 +4,8 @@ warning off
 %load dataset
 datas=44;
 load(strcat('Datas_',int2str(datas)),'DATA');
-NF=size(DATA{3},1); %number of folds
+%NF=size(DATA{3},1); %number of folds
+NF =1;
 DIV=DATA{3};%for the division between training and test set
 DIM1=DATA{4};%training patterns number
 DIM2=DATA{5};%total patterns number
