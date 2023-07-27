@@ -16,7 +16,7 @@ yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
-method = 2;             %1 for the bilateral filter and canny; 2 for polar coordinates
+method = 0;             %1 for the bilateral filter and canny; 2 for polar coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load pre-trained AlexNet
 net = alexnet;  %load AlexNet
@@ -188,8 +188,16 @@ for fold=1:NF%for each fold
     ACC(fold)=sum(b==yy)./length(yy);
 
     %save whatever you need
-    fid = fopen('resultsPolar.txt','w');
-    fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    if method == 1
+        fid = fopen('resultsBilateralCanny.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    elseif method == 2
+        fid = fopen('resultsPolar.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    else
+        fid = fopen('results.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    end
     %%%%%
     
 end
