@@ -5,7 +5,7 @@ warning off
 datas=44;
 load(strcat('Datas_',int2str(datas)),'DATA');
 %NF=size(DATA{3},1); %number of folds
-NF =2;
+NF = size(DATA{3},1);
 DIV=DATA{3};%for the division between training and test set
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %I added a division by 4 since it was to huge for my computer :(
@@ -16,11 +16,11 @@ yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
+method = 2;             %1 for the bilateral filter and canny; 2 for polar coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load pre-trained AlexNet
 net = alexnet;  %load AlexNet
 siz=[227 227];
-
 %parameters
 miniBatchSize = 15;                         %Originally it was 30
 learningRate = 1e-4;
@@ -67,18 +67,33 @@ for fold=1:NF%for each fold
         %Having more uniform region should lead to a lower rate of not
         %useful edges. I've decided to try first the sobel operator and
         %then i'll check the canny operator for the edge methodd.
-        smoothingDegree=300+(fold*50);%I'm gonna set it according to the folder
-        spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
-        copyIM = IM;
-        IM = rgb2gray(IM);
-        try
-            IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
-            IM2 = edge(IM,edgeMethod);
-        catch ME
-            fprintf('Exception\n')
+        if method == 1
+            smoothingDegree=300+(fold*50);%I'm gonna set it according to the folder
+            spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            try
+                IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
+                IM2 = edge(IM,edgeMethod);
+            catch ME
+                fprintf('Exception\n')
+            end
+            %montage({copyIM,IM2})
+            %x = input("Prompt");
         end
-        %montage({copyIM,IM2})
-        %x = input("Prompt");
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Image in polar coordinates. I'm gonna try to use magnitude and
+        %fase of the image through first order derivatives.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 2
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            [IMdx,IMdy] = imgradientxy(IM);
+            [IMmagnitude, IMdirection] = imgradient(IM,'prewitt');
+            IM = IMdirection;
+            %montage({copyIM,IMdx,IMdy,IMmagnitude, IMdirection})
+            %x = input("Prompt");
+        end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
         if size(IM,3)==1
@@ -130,15 +145,31 @@ for fold=1:NF%for each fold
         %Having more uniform region should lead to a lower rate of not
         %useful edges. I've decided to try first the sobel operator and
         %then i'll check the canny operator for the edge methodd.
-        smoothingDegree=300+(50*fold);
-        spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
-        copyIM = IM;
-        IM = rgb2gray(IM);
-        try
-            IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
-            IM2 = edge(IM,edgeMethod);
-        catch ME
-            fprintf('Exception\n')
+        if method == 1
+            smoothingDegree=300+(50*fold);
+            spatialSigma=3;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            try
+                IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
+                IM2 = edge(IM,edgeMethod);
+            catch ME
+                fprintf('Exception\n')
+            end
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Image in polar coordinates. I'm gonna try to use magnitude and
+        %fase of the image through first order derivatives.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 2
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            [IMdx,IMdy] = imgradientxy(IM);
+            [IMmagnitude, IMdirection] = imgradient(IM,'prewitt');
+            IM = IMdirection;
+            %montage({copyIM,IMdx,IMdy,IMmagnitude, IMdirection})
+            %x = input("Prompt");
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);
@@ -157,6 +188,8 @@ for fold=1:NF%for each fold
     ACC(fold)=sum(b==yy)./length(yy);
 
     %save whatever you need
+    fid = fopen('resultsPolar.txt','w');
+    fprintf(fid,'%6.2f  %12.8f\n',ACC);
     %%%%%
     
 end
