@@ -16,9 +16,10 @@ yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
-method = 6;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;
+method = 7;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;
 %3 for gabor features;4 for polar coordinates magnitude;5 for FFT; 6 for
-%both magitude and direction polar coordinates
+%both magitude and direction polar coordinates;7 for a method i'm
+%proposing;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load pre-trained AlexNet
 net = alexnet;  %load AlexNet
@@ -76,7 +77,8 @@ for fold=1:NF%for each fold
             IM = rgb2gray(IM);
             try
                 IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
-                IM2 = edge(IM,edgeMethod);
+                IM = rgb2gray(IM);
+                IM = edge(IM,edgeMethod);
             catch ME
                 fprintf('Exception\n')
             end
@@ -162,6 +164,42 @@ for fold=1:NF%for each fold
             %x = input("prompt");
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %My proposed method
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %In this part i want to experiment my own method, combining it with
+        %some techniques shown in the papers and some knowledge i got from
+        %the computer vision course.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 7
+            smoothingDegree=100;%I'm gonna set it according to the folder
+            spatialSigma=2;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            try
+                %IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
+                Laplacian=[0 -1 0; -1 4 -1; 0 -1 0];
+                IMpositive=conv2(IM, Laplacian, 'same');
+                min_value = min(IMpositive(:));
+                max_value = max(IMpositive(:));
+                normalized_image = (IMpositive - min_value) / (max_value - min_value);
+                IMpositive = uint8(normalized_image * 255);
+                Laplacian2=[0 1 0; 1 -4 1; 0 1 0];
+                IMnegative=conv2(IM, Laplacian2, 'same');
+                min_value = min(IMnegative(:));
+                max_value = max(IMnegative(:));
+                normalized_image2 = (IMnegative - min_value) / (max_value - min_value);
+                IMnegative = uint8(normalized_image * 255);
+                IM = copyIM + IMnegative;
+                IM = copyIM + IMpositive;
+                %IM = rgb2gray(IM);
+                %IM2 = edge(IM,edgeMethod);
+                %IM=IM2;
+            catch ME
+                fprintf('Exception\n')
+            end
+            %montage({copyIM,IM});
+            %x = input("prompt");
+        end
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
         if size(IM,3)==1
             IM(:,:,2)=IM;
@@ -306,6 +344,43 @@ for fold=1:NF%for each fold
             %x = input("prompt");
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+         %My proposed method
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %In this part i want to experiment my own method, combining it with
+        %some techniques shown in the papers and some knowledge i got from
+        %the computer vision course.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 7
+            smoothingDegree=100;%I'm gonna set it according to the folder
+            spatialSigma=2;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            try
+                %IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
+                Laplacian=[0 -1 0; -1 4 -1; 0 -1 0];
+                IMpositive=conv2(IM, Laplacian, 'same');
+                min_value = min(IMpositive(:));
+                max_value = max(IMpositive(:));
+                normalized_image = (IMpositive - min_value) / (max_value - min_value);
+                IMpositive = uint8(normalized_image * 255);
+                Laplacian2=[0 1 0; 1 -4 1; 0 1 0];
+                IMnegative=conv2(IM, Laplacian2, 'same');
+                min_value = min(IMnegative(:));
+                max_value = max(IMnegative(:));
+                normalized_image2 = (IMnegative - min_value) / (max_value - min_value);
+                IMnegative = uint8(normalized_image * 255);
+                IM = copyIM + IMnegative;
+                IM = copyIM + IMpositive;
+                %IM = rgb2gray(IM);
+                %IM2 = edge(IM,edgeMethod);
+                %IM=IM2;
+            catch ME
+                fprintf('Exception\n')
+            end
+            %montage({copyIM,IM});
+            %x = input("prompt");
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);
         if size(IM,3)==1
             IM(:,:,2)=IM;
@@ -339,6 +414,9 @@ for fold=1:NF%for each fold
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     elseif method == 6
         fid = fopen('resultsPolarDouble.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    elseif method == 7
+        fid = fopen('resultsMyProposedMethods.txt','w');
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     else
         fid = fopen('results.txt','w');
