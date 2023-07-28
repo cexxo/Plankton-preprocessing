@@ -9,8 +9,8 @@ NF = size(DATA{3},1);
 DIV=DATA{3};%for the division between training and test set
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %I added a division by 4 since it was to huge for my computer :(
-DIM1=ceil(DATA{4}/3);%training patterns number
-DIM2=ceil(DATA{5}/3);%total patterns number
+DIM1=ceil(DATA{4});%training patterns number
+DIM2=ceil(DATA{5});%total patterns number
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
