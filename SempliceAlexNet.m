@@ -16,7 +16,7 @@ yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
-method = 3;             %1 for the bilateral filter and canny; 2 for polar coordinates;3 for gabor features
+method = 4;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;3 for gabor features;4 for polar coordinates magnitude
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load pre-trained AlexNet
 net = alexnet;  %load AlexNet
@@ -113,6 +113,20 @@ for fold=1:NF%for each fold
             %imshow(IM);
             %x = input("Prompt");
         end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Polar coordinates, but this time we use the magnitude instead of
+        %the phase.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 4
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            [IMdx,IMdy] = imgradientxy(IM);
+            [IMmagnitude, IMdirection] = imgradient(IM,'prewitt');
+            IM = IMmagnitude;
+            %montage({copyIM,IMdx,IMdy,IMmagnitude, IMdirection})
+            %x = input("Prompt");
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
         if size(IM,3)==1
             IM(:,:,2)=IM;
@@ -192,7 +206,9 @@ for fold=1:NF%for each fold
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %GABOR FEATURES
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %
+        %It is not producing good results, i'm imagining the images get
+        %confused to much. Gonna try a different approach to see if i can
+        %arrange something.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if method == 3
             IM = rgb2gray(IM);
@@ -208,6 +224,20 @@ for fold=1:NF%for each fold
             %imshow(IM);
             %x = input("Prompt");
         end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Polar coordinates, but this time we use the magnitude instead of
+        %the phase.
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 4
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            [IMdx,IMdy] = imgradientxy(IM);
+            [IMmagnitude, IMdirection] = imgradient(IM,'prewitt');
+            IM = IMmagnitude;
+            %montage({copyIM,IMdx,IMdy,IMmagnitude, IMdirection})
+            %x = input("Prompt");
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);
         if size(IM,3)==1
             IM(:,:,2)=IM;
@@ -232,6 +262,9 @@ for fold=1:NF%for each fold
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     elseif method == 3
         fid = fopen('resultsGabor45.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    elseif method == 4
+        fid = fopen('resultsPolarMagnitude.txt','w');
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     else
         fid = fopen('results.txt','w');
