@@ -9,14 +9,16 @@ NF = size(DATA{3},1);
 DIV=DATA{3};%for the division between training and test set
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %I added a division by 4 since it was to huge for my computer :(
-DIM1=ceil(DATA{4}/5);%training patterns number
-DIM2=ceil(DATA{5}/5);%total patterns number
+DIM1=ceil(DATA{4}/3);%training patterns number
+DIM2=ceil(DATA{5}/3);%total patterns number
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
-method = 4;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;3 for gabor features;4 for polar coordinates magnitude
+method = 6;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;
+%3 for gabor features;4 for polar coordinates magnitude;5 for FFT; 6 for
+%both magitude and direction polar coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load pre-trained AlexNet
 net = alexnet;  %load AlexNet
@@ -125,6 +127,39 @@ for fold=1:NF%for each fold
             IM = IMmagnitude;
             %montage({copyIM,IMdx,IMdy,IMmagnitude, IMdirection})
             %x = input("Prompt");
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Filtering in frequence
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Gonna try to move the image in frequency, then remove low
+        %frequency components and the try to give it to the network
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 5
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            F=fft2(IM);
+            IM=fftshift(log(1+abs(F)));
+            min_value = min(IM(:));
+            max_value = max(IM(:));
+            normalized_image = (IM - min_value) / (max_value - min_value);
+            IM = uint8(normalized_image * 255);
+            %montage({copyIM,IM});
+            %x = input("prompt");
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Double usage of polar coordinates
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Gonna try to move the image in frequency, then remove low
+        %frequency components and the try to give it to the network
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 6
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            [IMdx,IMdy] = imgradientxy(IM);
+            [IMmagnitude, IMdirection] = imgradient(IM,'prewitt');
+            IM = horzcat(IMmagnitude,IMdirection);
+            %montage({copyIM,IM});
+            %x = input("prompt");
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
@@ -238,6 +273,39 @@ for fold=1:NF%for each fold
             %x = input("Prompt");
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Filtering in frequence
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Gonna try to move the image in frequency, then remove low
+        %frequency components and the try to give it to the network
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 5
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            F=fft2(IM);
+            IM=fftshift(log(1+abs(F)));
+            min_value = min(IM(:));
+            max_value = max(IM(:));
+            normalized_image = (IM - min_value) / (max_value - min_value);
+            IM = uint8(normalized_image * 255);
+            %montage({copyIM,IM});
+            %x = input("prompt");
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Double usage of polar coordinates
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %Gonna try to move the image in frequency, then remove low
+        %frequency components and the try to give it to the network
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 6
+            copyIM = IM;
+            IM = rgb2gray(IM);
+            [IMdx,IMdy] = imgradientxy(IM);
+            [IMmagnitude, IMdirection] = imgradient(IM,'prewitt');
+            IM = horzcat(IMmagnitude,IMdirection);
+            %montage({copyIM,IM});
+            %x = input("prompt");
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         IM=imresize(IM,[siz(1) siz(2)]);
         if size(IM,3)==1
             IM(:,:,2)=IM;
@@ -265,6 +333,12 @@ for fold=1:NF%for each fold
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     elseif method == 4
         fid = fopen('resultsPolarMagnitude.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    elseif method == 5
+        fid = fopen('resultsFFT.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    elseif method == 6
+        fid = fopen('resultsPolarDouble.txt','w');
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     else
         fid = fopen('results.txt','w');
