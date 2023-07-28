@@ -16,7 +16,7 @@ yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
-method = 0;             %1 for the bilateral filter and canny; 2 for polar coordinates
+method = 3;             %1 for the bilateral filter and canny; 2 for polar coordinates;3 for gabor features
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %load pre-trained AlexNet
 net = alexnet;  %load AlexNet
@@ -95,6 +95,24 @@ for fold=1:NF%for each fold
             %x = input("Prompt");
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %GABOR FEATURES
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 3
+            IM = rgb2gray(IM);
+            copyIM = IM;
+            wavelength = 20;
+            orientation = [45];              %Gonna make it change interactively
+            g = gabor(wavelength,orientation(1)); 
+            IM = imgaborfilt(IM,g);
+            min_value = min(IM(:));
+            max_value = max(IM(:));
+            normalized_image = (IM - min_value) / (max_value - min_value);
+            IM = uint8(normalized_image * 255);
+            %imshow(IM);
+            %x = input("Prompt");
+        end
         IM=imresize(IM,[siz(1) siz(2)]);%you have to do image resize to make it compatible with CNN
         if size(IM,3)==1
             IM(:,:,2)=IM;
@@ -172,6 +190,24 @@ for fold=1:NF%for each fold
             %x = input("Prompt");
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %GABOR FEATURES
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if method == 3
+            IM = rgb2gray(IM);
+            copyIM = IM;
+            wavelength = 20;
+            orientation = [45];              %Gonna make it change interactively
+            g = gabor(wavelength,orientation(1)); 
+            IM = imgaborfilt(IM,g);
+            min_value = min(IM(:));
+            max_value = max(IM(:));
+            normalized_image = (IM - min_value) / (max_value - min_value);
+            IM = uint8(normalized_image * 255);
+            %imshow(IM);
+            %x = input("Prompt");
+        end
         IM=imresize(IM,[siz(1) siz(2)]);
         if size(IM,3)==1
             IM(:,:,2)=IM;
@@ -193,6 +229,9 @@ for fold=1:NF%for each fold
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     elseif method == 2
         fid = fopen('resultsPolar.txt','w');
+        fprintf(fid,'%6.2f  %12.8f\n',ACC);
+    elseif method == 3
+        fid = fopen('resultsGabor45.txt','w');
         fprintf(fid,'%6.2f  %12.8f\n',ACC);
     else
         fid = fopen('results.txt','w');
