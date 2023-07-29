@@ -9,7 +9,7 @@ NF = size(DATA{3},1);
 DIV=DATA{3};%for the division between training and test set
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %I added a division by 4 since it was to huge for my computer :(
-DIM1=ceil(DATA{4});%training patterns number
+DIM1=ceil(DATA{4}/3);%training patterns number
 DIM2=ceil(DATA{5});%total patterns number
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 yE=DATA{2};%label of all the patterns
@@ -25,12 +25,12 @@ method = 0;             %1 for the bilateral filter and canny; 2 for polar coord
 net = alexnet;  %load AlexNet
 siz=[227 227];
 %parameters
-miniBatchSize = 15;                         %Originally it was 30
+miniBatchSize = 30;                         %Originally it was 30
 learningRate = 1e-4;
 metodoOptim='sgdm';
 options = trainingOptions(metodoOptim,...
     'MiniBatchSize',miniBatchSize,...
-    'MaxEpochs',15,...                      %epochs were 30, i'm gonna put it to 15 since i don't have a dedicated GPU
+    'MaxEpochs',30,...                      %epochs were 30, i'm gonna put it to 15 since i don't have a dedicated GPU
     'InitialLearnRate',learningRate,...
     'Verbose',false,...
     'Plots','training-progress');
