@@ -16,7 +16,7 @@ yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
-method = 7;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;
+method = 0;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;
 %3 for gabor features;4 for polar coordinates magnitude;5 for FFT; 6 for
 %both magitude and direction polar coordinates;7 for a method i'm
 %proposing;
@@ -168,13 +168,15 @@ for fold=1:NF%for each fold
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %In this part i want to experiment my own method, combining it with
         %some techniques shown in the papers and some knowledge i got from
-        %the computer vision course.
+        %the computer vision course. I'm sharpening first the image with
+        %the positive and negativie laplacian.I've decided to use also a
+        %bilateral filter to remove possible noise in the image.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if method == 7
-            smoothingDegree=100;%I'm gonna set it according to the folder
-            spatialSigma=2;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
-            copyIM = IM;
+            smoothingDegree=100;
+            spatialSigma=2;
             IM = rgb2gray(IM);
+            copyIM = IM;
             try
                 %IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
                 Laplacian=[0 -1 0; -1 4 -1; 0 -1 0];
@@ -189,8 +191,9 @@ for fold=1:NF%for each fold
                 max_value = max(IMnegative(:));
                 normalized_image2 = (IMnegative - min_value) / (max_value - min_value);
                 IMnegative = uint8(normalized_image * 255);
+                copyIM = imbilatfilt(IM,smoothingDegree,spatialSigma);
                 IM = copyIM + IMnegative;
-                IM = copyIM + IMpositive;
+                IM = copyIM + IMpositive; 
                 %IM = rgb2gray(IM);
                 %IM2 = edge(IM,edgeMethod);
                 %IM=IM2;
@@ -208,13 +211,14 @@ for fold=1:NF%for each fold
         trainingImages(:,:,:,pattern)=IM;
     end
     imageSize=size(IM);
-    
+    %%%%I'm disabling the data augmentation since my laptop is not strong
+    %%%%enoguh and do not have a dedicated GPU.
     %data augmentation
-    imageAugmenter = imageDataAugmenter( ...
-        'RandXReflection',true, ...
-        'RandXScale',[1 2]);
-    trainingImages = augmentedImageDatastore(imageSize,trainingImages,categorical(y'),'DataAugmentation',imageAugmenter);
-    
+    %imageAugmenter = imageDataAugmenter( ...
+    %    'RandXReflection',true, ...
+    %    'RandXScale',[1 2]);
+    %trainingImages = augmentedImageDatastore(imageSize,trainingImages,categorical(y'),'DataAugmentation',imageAugmenter);
+    trainingImages = augmentedImageDatastore(imageSize,trainingImages,categorical(y'));
     %tuning della rete
     % The last three layers of the pretrained network net are configured for 1000 classes.
     %These three layers must be fine-tuned for the new classification problem. Extract all layers, except the last three, from the pretrained network.
@@ -225,7 +229,15 @@ for fold=1:NF%for each fold
         softmaxLayer
         classificationLayer];
     netTransfer = trainNetwork(trainingImages,layers,options);
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %I've added it
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %trainingInfo = netTransfer.TrainingInfo;
+
+    % Access the training loss (error) and accuracy values for each epoch
+    %trainingLoss = trainingInfo.TrainingLoss;
+    %trainingAccuracy = trainingInfo.TrainingAccuracy;
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %test set
     clear nome test testImages
     for pattern=ceil(DIM1)+1:ceil(DIM2)
@@ -351,10 +363,10 @@ for fold=1:NF%for each fold
         %the computer vision course.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if method == 7
-            smoothingDegree=100;%I'm gonna set it according to the folder
-            spatialSigma=2;%Gonna set it to 3 and see if there are exceptions since with 4 it doesn't work always.
-            copyIM = IM;
+            smoothingDegree=100;
+            spatialSigma=2;
             IM = rgb2gray(IM);
+            copyIM = IM;
             try
                 %IM=imbilatfilt(IM,smoothingDegree,spatialSigma);
                 Laplacian=[0 -1 0; -1 4 -1; 0 -1 0];
@@ -369,8 +381,9 @@ for fold=1:NF%for each fold
                 max_value = max(IMnegative(:));
                 normalized_image2 = (IMnegative - min_value) / (max_value - min_value);
                 IMnegative = uint8(normalized_image * 255);
+                copyIM = imbilatfilt(IM,smoothingDegree,spatialSigma);
                 IM = copyIM + IMnegative;
-                IM = copyIM + IMpositive;
+                IM = copyIM + IMpositive; 
                 %IM = rgb2gray(IM);
                 %IM2 = edge(IM,edgeMethod);
                 %IM=IM2;
