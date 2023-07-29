@@ -16,7 +16,7 @@ yE=DATA{2};%label of all the patterns
 NX=DATA{1};%images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 edgeMethod = 'Canny';
-method = 7;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;
+method = 0;             %1 for the bilateral filter and canny; 2 for polar coordinates direction;
 %3 for gabor features;4 for polar coordinates magnitude;5 for FFT; 6 for
 %both magitude and direction polar coordinates;7 for a method i'm
 %proposing;
